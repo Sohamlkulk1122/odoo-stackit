@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stalk-it - Collaborative Learning</title>
+    <!-- Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for Dark/Light Mode */
+        :root {
+            --light-bg: #f0f2f5; /* Light background for the page */
+            --light-card-bg: #ffffff; /* Background for cards/containers */
+            --light-text-color: #333;
+            --light-border-color: #ddd;
+            --light-primary-color: #007bff; /* Brainly-like blue */
+            --light-secondary-color: #6c757d; /* Grey text/icons */
+            --light-success-color: #28a745; /* Green for success messages */
+            --light-danger-color: #dc3545; /* Red for error messages */
+            --light-shadow-color: rgba(0,0,0,0.1);
+            --light-hero-bg: #e0f7fa;
+            --light-hero-text: #333;
+        }
+
+        /* Dark theme overrides */
+        body.dark-theme {
+            --light-bg: #1a1a1a;
+            --light-card-bg: #2a2a2a;
+            --light-text-color: #e0e0e0;
+            --light-border-color: #444;
+            --light-primary-color: #8ab4f8; /* Lighter blue for dark mode primary */
+            --light-secondary-color: #b0b0b0;
+            --light-success-color: #6aa84f;
+            --light-danger-color: #e57373;
+            --light-shadow-color: rgba(0,0,0,0.5);
+            --light-hero-bg: #2c3e50;
+            --light-hero-text: #f0f0f0;
+        }
+
+        /* Global Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--light-bg);
+            color: var(--light-text-color);
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--light-card-bg);
+            border-bottom: 1px solid var(--light-border-color);
+            box-shadow: 0 2px 4px var(--light-shadow-color);
+        }
+
+        .navbar .logo a {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--light-primary-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .navbar .logo a:hover {
+            filter: brightness(1.1);
+        }
+
+        .navbar nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar nav ul li {
+            margin-left: 20px;
+        }
+
+        .navbar nav ul li a, .navbar nav ul li button {
+            text-decoration: none;
+            color: var(--light-text-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .navbar nav ul li a:hover, .navbar nav ul li button:hover {
+            background-color: rgba(0,0,0,0.05); /* Light hover for all themes */
+        }
+
+        .dark-theme .navbar nav ul li a:hover, .dark-theme .navbar nav ul li button:hover {
+            background-color: rgba(255,255,255,0.05); /* Darker hover for dark theme */
+        }
+
+        .navbar nav ul li button.logout-btn {
+            color: var(--light-danger-color);
+            font-weight: bold;
+        }
+
+        .navbar nav ul li button.theme-toggle-btn {
+            font-size: 14px;
+            padding: 5px 10px;
+            border: 1px solid var(--light-border-color);
+            border-radius: 20px; /* Pill shape */
+        }
+
+        .navbar nav ul li .user-info {
+            font-weight: bold;
+            color: var(--light-primary-color);
+        }
+
+        /* Flash Messages/Alerts */
+        .message-box {
+            padding: 10px 15px;
+            margin: 20px auto;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            max-width: 600px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .message-box.success {
+            background-color: var(--light-success-color);
+            color: white;
+        }
+        .message-box.error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--light-danger-color);
+            border: 1px solid var(--light-danger-color);
+        }
+        .message-box.info {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: var(--light-primary-color);
+            border: 1px solid var(--light-primary-color);
+        }
+
+        /* General Buttons */
+        .btn-primary, .btn-primary-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--light-primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px var(--light-shadow-color);
+        }
+
+        .btn-primary:hover, .btn-primary-link:hover {
+            background-color: #0056b3; /* Darker shade */
+            transform: translateY(-1px); /* Slight lift */
+            box-shadow: 0 4px 8px var(--light-shadow-color);
+        }
+
+        /* Page Sections (for dynamic display) */
+        .page-section {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-out;
+        }
+        .page-section.active {
+            display: block; /* Show when active */
+        }
+
+        /* HomePage Styles (from mockup) */
+        #home-page .hero {
+            text-align: center;
+            padding: 80px 20px;
+            background-color: var(--light-hero-bg);
+            border-radius: 10px;
+            margin-bottom: 40px;
+            color: var(--light-hero-text);
+            box-shadow: 0 4px 15px var(--light-shadow-color);
+        }
+
+        #home-page .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        #home-page .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+        }
+
+        #home-page .search-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--light-card-bg);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px var(--light-shadow-color);
+            transition: box-shadow 0.3s ease;
+        }
+
+        #home-page .search-box:focus-within {
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4); /* Glow on focus */
+        }
+
+        #home-page .search-box input {
+            flex-grow: 1;
+            padding: 15px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+            color: var(--light-text-color);
+        }
+
+        #home-page .search-box button {
+            background-color: var(--light-primary-color);
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border-radius: 0 30px 30px 0;
+            color: white; /* For unicode icon */
+            font-size: 20px;
+        }
+
+        #home-page .search-box button:hover {
+            background-color: #0056b3;
+        }
+
+        #home-page .categories {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        #home-page .category-item {
+            background-color: var(--light-card-bg);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 2px 5px var(--light-shadow-color);
+            font-weight: bold;
+            color: var(--light-primary-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--light-border-color); /* Subtle border */
+        }
+
+        #home-page .category-item:hover {
+            background-color: var(--light-primary-color);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px var(--light-shadow-color);
+        }
+
+        /* Auth Form Styles (Login/Register) */
+        .auth-form {
+            background-color: var(--light-card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--light-shadow-color);
+            max-width: 400px;
+            margin: 50px auto;
+            animation: fadeIn 0.5s ease-out; /* Basic fade-in animation */
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--light-primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        textarea {
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            padding: 10px;
+            border: 1px solid var(--light-border-color);
+            border-radius: 5px;
+            background-color: var(--light-bg);
+            color: var(--light-text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus,
+        textarea:focus {
+            border-color: var(--light-primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Focus glow */
+            outline: none;
+        }
+
+        .auth-switch-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .auth-switch-link a {
+            color: var(--light-primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .auth-switch-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard Layout */
+        #dashboard-page .dashboard-layout {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background-color: var(--light-bg);
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--light-shadow-color);
+            min-height: 70vh;
+        }
+
+        #dashboard-page .main-content {
+            flex: 3;
+            background-color: var(--light-card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--light-shadow-color);
+            position: relative;
+        }
+
+        #dashboard-page .sidebar {
+            flex: 1;
+            background-color: var(--light-card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--light-shadow-color);
+        }
+
+        /* Dashboard Search Bar (Top) */
+        #dashboard-page .search-bar-top {
+            display: flex;
+            align-items: center;
+            background-color: var(--light-bg);
+            border-radius: 20px;
+            padding: 5px;
+            margin-bottom: 20px;
+            border: 1px solid var(--light-border-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        #dashboard-page .dashboard-search-input {
+            flex-grow: 1;
+            padding: 8px 15px;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--light-text-color);
+            font-size: 16px;
+        }
+
+        #dashboard-page .search-icon-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--light-secondary-color);
+            transition: color 0.2s ease;
+        }
+        #dashboard-page .search-icon-btn:hover {
+            color: var(--light-primary-color);
+        }
+
+        /* Ask Doubt Box in Sidebar */
+        #dashboard-page .ask-doubt-box h3 {
+            margin-top: 0;
+            color: var(--light-primary-color);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        #dashboard-page .ask-doubt-textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--light-border-color);
+            border-radius: 5px;
+            background-color: var(--light-bg);
+            color: var(--light-text-color);
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Question Card Styling (more like mockup) */
+        #dashboard-page .question-list .question-card {
+            background-color: var(--light-bg);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--light-border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #dashboard-page .question-list .question-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px var(--light-shadow-color);
+        }
+
+        #dashboard-page .question-card .card-left {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        #dashboard-page .question-card .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--light-primary-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px var(--light-shadow-color);
+        }
+
+        #dashboard-page .question-card .question-content {
+            flex-grow: 1;
+        }
+
+        #dashboard-page .question-card .question-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        #dashboard-page .question-card .question-content h3 a {
+            color: var(--light-text-color);
+            text-decoration: none;
+        }
+        #dashboard-page .question-card .question-content h3 a:hover {
+            text-decoration: underline;
+            color: var(--light-primary-color);
+        }
+
+        #dashboard-page .question-card .question-content p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--light-secondary-color);
+        }
+
+        #dashboard-page .question-card .card-right {
+            flex-shrink: 0;
+            margin-left: 20px;
+            display: flex;
+            align-items: center;
+            border: 1px dashed var(--light-primary-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            background-color: rgba(0, 123, 255, 0.05); /* Light background for this section */
+            transition: background-color 0.2s ease;
+        }
+        .dark-theme #dashboard-page .question-card .card-right {
+            background-color: rgba(138, 180, 248, 0.05);
+        }
+
+        #dashboard-page .card-right .icon-group span {
+            font-size: 20px;
+            margin-left: 10px;
+            color: var(--light-primary-color);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        #dashboard-page .card-right .icon-group span:hover {
+            transform: scale(1.1);
+        }
+
+        /* Bottom action buttons */
+        #dashboard-page .bottom-action-buttons {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 50;
+        }
+
+        #dashboard-page .bottom-action-buttons button {
+            background-color: var(--light-primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            font-size: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px var(--light-shadow-color);
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #dashboard-page .bottom-action-buttons button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px var(--light-shadow-color);
+        }
+
+        #dashboard-page .bookmark-btn {
+            background-color: var(--light-secondary-color) !important;
+        }
+        #dashboard-page .bookmark-btn:hover {
+            background-color: #5a6268 !important;
+        }
+
+        /* Ask Question Page Specific Styles */
+        #ask-question-page {
+            background-color: var(--light-card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--light-shadow-color);
+            max-width: 800px;
+            margin: 50px auto;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #ask-question-page h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--light-primary-color);
+        }
+
+        /* Rich Text Editor Placeholder */
+        .rich-text-editor-placeholder {
+            border: 1px solid var(--light-border-color);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .rich-text-editor-placeholder textarea {
+            border: none;
+            resize: vertical;
+            min-height: 150px;
+            padding: 10px;
+            background-color: var(--light-bg);
+            color: var(--light-text-color);
+            width: calc(100% - 20px); /* Adjust for padding */
+        }
+
+        .rich-text-editor-placeholder .editor-toolbar-placeholder {
+            background-color: var(--light-bg);
+            border-top: 1px solid var(--light-border-color);
+            padding: 8px 10px;
+            display: flex;
+            gap: 15px;
+            font-size: 18px;
+            color: var(--light-secondary-color);
+            cursor: pointer;
+        }
+
+        .editor-toolbar-placeholder span:hover {
+            color: var(--light-primary-color);
+        }
+
+        /* Question Detail Page */
+        #question-detail-page {
+            background-color: var(--light-card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--light-shadow-color);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #question-detail-page h2 {
+            color: var(--light-primary-color);
+            margin-bottom: 10px;
+        }
+
+        #question-detail-page .question-meta {
+            font-size: 14px;
+            color: var(--light-secondary-color);
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--light-border-color);
+            padding-bottom: 10px;
+        }
+
+        #question-detail-page .question-description {
+            margin-bottom: 30px;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        #question-detail-page .tags span {
+            display: inline-block;
+            background-color: var(--light-primary-color);
+            color: white;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+
+        #question-detail-page .ai-bot-response {
+            background-color: rgba(138, 180, 248, 0.1); /* Light blue background for AI */
+            border-left: 5px solid var(--light-primary-color);
+            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            animation: slideInFromTop 0.4s ease-out;
+        }
+
+        #question-detail-page .ai-bot-response h3 {
+            color: var(--light-primary-color);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        #question-detail-page .answers-section h3 {
+            color: var(--light-primary-color);
+            margin-top: 30px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--light-border-color);
+            padding-bottom: 10px;
+            font-size: 22px;
+        }
+
+        #question-detail-page .answer-list .answer-card {
+            background-color: var(--light-bg);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--light-border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        #question-detail-page .answer-list .answer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px var(--light-shadow-color);
+        }
+
+        #question-detail-page .answer-list .answer-card p {
+            margin-bottom: 10px;
+        }
+
+        #question-detail-page .answer-list .answer-card .answer-meta {
+            font-size: 12px;
+            color: var(--light-secondary-color);
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        #question-detail-page .post-answer-form {
+            margin-top: 30px;
+            border-top: 1px solid var(--light-border-color);
+            padding-top: 20px;
+        }
+
+        #question-detail-page .post-answer-form textarea {
+            min-height: 120px;
+            margin-bottom: 15px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            background-color: var(--light-card-bg);
+            border-top: 1px solid var(--light-border-color);
+            color: var(--light-secondary-color);
+            font-size: 14px;
+            box-shadow: 0 -2px 4px var(--light-shadow-color);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--light-card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px var(--light-shadow-color);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            position: relative;
+            max-width: 700px;
+            width: 90%;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--light-secondary-color);
+            transition: color 0.2s ease;
+        }
+        .modal-close-btn:hover {
+            color: var(--light-text-color);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInFromTop {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+            .navbar nav ul {
+                flex-wrap: wrap;
+                margin-top: 10px;
+            }
+            .navbar nav ul li {
+                margin-left: 0;
+                margin-right: 15px;
+                margin-bottom: 10px;
+            }
+            #home-page .hero h1 {
+                font-size: 36px;
+            }
+            #home-page .hero p {
+                font-size: 16px;
+            }
+            #dashboard-page .dashboard-layout {
+                flex-direction: column;
+            }
+            #dashboard-page .dashboard-layout .main-content,
+            #dashboard-page .dashboard-layout .sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            #dashboard-page .bottom-action-buttons {
+                position: static;
+                justify-content: center;
+                margin-top: 20px;
+                margin-bottom: 0;
+            }
+            .auth-form, #ask-question-page, #question-detail-page {
+                margin: 20px auto;
+                padding: 20px;
+            }
+            .form-group input, textarea {
+                width: calc(100% - 20px); /* Adjust for padding only */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <a href="#" onclick="showPage('home-page'); return false;">Stalk-it</a>
+        </div>
+        <nav>
+            <ul id="nav-links">
+                <!-- Navigation links will be dynamically updated by JS -->
+            </ul>
+        </nav>
+    </header>
+
+    <div id="message-box" class="message-box"></div>
+
+    <main class="container">
+        <!-- Home Page -->
+        <section id="home-page" class="page-section active">
+            <div class="hero">
+                <h1>Go from questioning<br>to understanding</h1>
+                <p>Stalk-it is the knowledge-sharing community where hundreds of millions of students and experts put their heads together to crack their toughest homework questions. (Under Development)</p>
+                <div class="search-box">
+                    <input type="text" placeholder="What is your question?">
+                    <button>🔍</button>
+                </div>
+            </div>
+
+            <div class="categories">
+                <div class="category-item">CBSE BOARD XII</div>
+                <div class="category-item">CBSE BOARD X</div>
+                <div class="category-item">Political Science</div>
+                <div class="category-item">Economy</div>
+                <div class="category-item">Science</div>
+            </div>
+        </section>
+
+        <!-- Login Page -->
+        <section id="login-page" class="page-section">
+            <div class="auth-form">
+                <h2>Log In to Stalk-it</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username:</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password:</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Log In</button>
+                </form>
+                <p class="auth-switch-link">Don't have an account? <a href="#" onclick="showPage('register-page'); return false;">Join Now</a></p>
+            </div>
+        </section>
+
+        <!-- Register Page -->
+        <section id="register-page" class="page-section">
+            <div class="auth-form">
+                <h2>Join Stalk-it</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">Username:</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email:</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password:</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Register</button>
+                </form>
+                <p class="auth-switch-link">Already have an account? <a href="#" onclick="showPage('login-page'); return false;">Log In</a></p>
+            </div>
+        </section>
+
+        <!-- Dashboard Page -->
+        <section id="dashboard-page" class="page-section">
+            <div class="dashboard-layout">
+                <div class="main-content">
+                    <div class="search-bar-top">
+                        <input type="text" placeholder="Search questions..." class="dashboard-search-input">
+                        <button class="search-icon-btn">🔍</button>
+                    </div>
+
+                    <h2>Pre-fed Questions</h2>
+                    <div id="question-list" class="question-list">
+                        <!-- Questions will be loaded here by JS -->
+                    </div>
+                    <div class="bottom-action-buttons">
+                        <button class="bookmark-btn">🔖</button>
+                        <button class="add-question-btn" onclick="openAskQuestionModal()">➕</button>
+                    </div>
+                </div>
+                <div class="sidebar">
+                    <div class="ask-doubt-box">
+                        <h3>Ask a Doubt</h3>
+                        <form>
+                            <textarea placeholder="Enter your question here..." rows="4" class="ask-doubt-textarea"></textarea>
+                            <button type="button" class="btn-primary" onclick="openAskQuestionModal()">Ask</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ask Question Page (as a modal) -->
+        <div id="ask-question-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="closeAskQuestionModal()">&times;</button>
+                <div id="ask-question-page">
+                    <h2>Ask a New Question</h2>
+                    <form id="ask-question-form">
+                        <div class="form-group">
+                            <label for="question-title">Title:</label>
+                            <input type="text" id="question-title" placeholder="e.g., What is the capital of France?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="question-description">Description:</label>
+                            <div class="rich-text-editor-placeholder">
+                                <textarea id="question-description" placeholder="Provide more details about your question..." rows="8"></textarea>
+                                <div class="editor-toolbar-placeholder">
+                                    <span>B</span> <span>I</span> <span>U</span> <span>🔗</span> <span>🖼️</span> <span>📋</span> <span>✔️</span>
+                                </div>
+                            </div>
+                            <small>This area simulates a Rich Text Editor.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="question-tags">Tags (comma-separated):</label>
+                            <input type="text" id="question-tags" placeholder="e.g., HTML, CSS, JavaScript">
+                            <small>Separate tags with commas (e.g., React, JWT)</small>
+                        </div>
+                        <button type="submit" class="btn-primary">Post Question</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Question Detail Page -->
+        <section id="question-detail-page" class="page-section">
+            <h2 id="detail-question-title"></h2>
+            <p class="question-meta">Asked by <span id="detail-question-username"></span> on <span id="detail-question-timestamp"></span></p>
+            <div id="detail-question-description" class="question-description"></div>
+            <div id="detail-question-tags" class="tags"></div>
+
+            <div id="ai-bot-response" class="ai-bot-response" style="display: none;">
+                <h3>Stalk-it AI Assistant:</h3>
+                <p id="ai-bot-text"></p>
+            </div>
+
+            <div class="answers-section">
+                <h3>Answers (<span id="answers-count">0</span>)</h3>
+                <div id="answer-list" class="answer-list">
+                    <!-- Answers will be loaded here by JS -->
+                </div>
+
+                <div class="post-answer-form">
+                    <h3>Post Your Answer</h3>
+                    <form id="post-answer-form">
+                        <textarea id="answer-content" placeholder="Write your answer here..." rows="6" required></textarea>
+                        <button type="submit" class="btn-primary">Submit Answer</button>
+                    </form>
+                    <p id="answer-login-prompt" style="display: none;">Please <a href="#" onclick="showPage('login-page'); return false;">log in</a> to post an answer.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Stalk-it. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // --- Global Variables and Data Storage (Local Storage) ---
+        const LOCAL_STORAGE_USERS_KEY = 'stalkit_users';
+        const LOCAL_STORAGE_QUESTIONS_KEY = 'stalkit_questions';
+        const LOCAL_STORAGE_ANSWERS_KEY = 'stalkit_answers';
+        const LOCAL_STORAGE_CURRENT_USER_KEY = 'stalkit_current_user';
+        const LOCAL_STORAGE_THEME_KEY = 'stalkit_theme';
+
+        let users = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) || [];
+        let questions = JSON.parse(localStorage.getItem(LOCAL_STORAGE_QUESTIONS_KEY)) || [];
+        let answers = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ANSWERS_KEY)) || [];
+        let currentUser = JSON.parse(localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY));
+        let currentQuestionId = null; // To keep track of the question being viewed
+
+        // --- Initial Data Seeding ---
+        function seedInitialData() {
+            if (users.length === 0) {
+                users.push({ id: 1, username: 'admin', email: 'admin@stalkit.com', password: 'adminpass' });
+                users.push({ id: 2, username: 'testuser', email: 'test@example.com', password: 'testpass' });
+                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
+            }
+
+            if (questions.length === 0) {
+                questions.push({ id: 1, userId: 1, title: 'What is HTML?', description: 'HTML stands for HyperText Markup Language, which is the standard markup language for documents designed to be displayed in a web browser. It describes the structure of a web page semantically and originally included cues for the appearance of the document.', tags: 'HTML, Web Development', timestamp: new Date().toISOString() });
+                questions.push({ id: 2, userId: 1, title: 'Full-form of HTML.', description: 'Hypertext Markup Language.', tags: 'HTML', timestamp: new Date().toISOString() });
+                questions.push({ id: 3, userId: 2, title: 'What is Web-page?', description: 'A document or information resource that is suitable for the World Wide Web and can be accessed through a web browser. A web page may contain text, graphics, and hyperlinks to other web pages and files.', tags: 'Web, Basics', timestamp: new Date().toISOString() });
+                localStorage.setItem(LOCAL_STORAGE_QUESTIONS_KEY, JSON.stringify(questions));
+            }
+            // No initial answers seeded, users can add them.
+        }
+
+        // --- UI Elements ---
+        const navLinks = document.getElementById('nav-links');
+        const messageBox = document.getElementById('message-box');
+        const questionListDiv = document.getElementById('question-list');
+        const askQuestionModal = document.getElementById('ask-question-modal');
+        const askQuestionForm = document.getElementById('ask-question-form');
+        const postAnswerForm = document.getElementById('post-answer-form');
+        const answerLoginPrompt = document.getElementById('answer-login-prompt');
+
+        // --- Theme Management ---
+        function applyTheme() {
+            const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY) || 'light';
+            document.body.classList.toggle('dark-theme', savedTheme === 'dark');
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem(LOCAL_STORAGE_THEME_KEY, newTheme);
+            applyTheme();
+        }
+
+        // --- Message Box (Alerts) ---
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = `message-box show ${type}`;
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Navigation and Page Display ---
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            updateNavbar(); // Update navbar links based on login status
+            if (pageId === 'dashboard-page') {
+                renderQuestions();
+            } else if (pageId === 'question-detail-page') {
+                // Question detail page is shown via renderQuestionDetail, not directly by showPage
+            }
+        }
+
+        function updateNavbar() {
+            navLinks.innerHTML = ''; // Clear existing links
+            const themeToggleBtn = `<button class="theme-toggle-btn" onclick="toggleTheme()">
+                                        ${document.body.classList.contains('dark-theme') ? '☀️ Light Mode' : '🌙 Dark Mode'}
+                                    </button>`;
+
+            if (currentUser) {
+                navLinks.innerHTML = `
+                    <li><a href="#" onclick="showPage('dashboard-page'); return false;">Dashboard</a></li>
+                    <li><a href="#" onclick="openAskQuestionModal(); return false;">Ask Question</a></li>
+                    <li><button class="logout-btn" onclick="handleLogout()">Logout</button></li>
+                    <li class="user-info">Hello, ${currentUser.username}</li>
+                    <li>${themeToggleBtn}</li>
+                `;
+            } else {
+                navLinks.innerHTML = `
+                    <li><a href="#" onclick="showPage('login-page'); return false;">Log In</a></li>
+                    <li><a href="#" onclick="showPage('register-page'); return false;">Join Now</a></li>
+                    <li>${themeToggleBtn}</li>
+                `;
+            }
+        }
+
+        // --- User Authentication ---
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem(LOCAL_STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
+                showMessage('Logged in successfully!', 'success');
+                showPage('dashboard-page');
+                document.getElementById('login-form').reset();
+            } else {
+                showMessage('Invalid username or password.', 'error');
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+
+            // Basic validation
+            if (!username || !email || !password) {
+                showMessage('All fields are required.', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+            if (!email.includes('@') || !email.includes('.')) {
+                showMessage('Invalid email format.', 'error');
+                return;
+            }
+            if (users.some(u => u.username === username || u.email === email)) {
+                showMessage('Username or email already exists.', 'error');
+                return;
+            }
+
+            const newUserId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+            const newUser = { id: newUserId, username, email, password };
+            users.push(newUser);
+            localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
+            showMessage('Account created successfully! Please log in.', 'success');
+            showPage('login-page');
+            document.getElementById('register-form').reset();
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem(LOCAL_STORAGE_CURRENT_USER_KEY);
+            showMessage('You have been logged out.', 'info');
+            showPage('home-page');
+        }
+
+        // --- Question Rendering (Dashboard) ---
+        function renderQuestions() {
+            questionListDiv.innerHTML = ''; // Clear previous questions
+            if (questions.length === 0) {
+                questionListDiv.innerHTML = '<p>No questions yet. Be the first to ask!</p>';
+                return;
+            }
+
+            questions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by newest first
+
+            questions.forEach(q => {
+                const poster = users.find(u => u.id === q.userId);
+                const username = poster ? poster.username : 'Unknown';
+                const initial = username.charAt(0).toUpperCase();
+                const shortDescription = q.description.length > 70 ? q.description.substring(0, 70) + '...' : q.description;
+
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+                questionCard.innerHTML = `
+                    <div class="card-left">
+                        <div class="avatar-circle">${initial}</div>
+                        <div class="question-content">
+                            <h3><a href="#" data-question-id="${q.id}">${q.title}</a></h3>
+                            <p>${shortDescription}</p>
+                        </div>
+                    </div>
+                    <div class="card-right">
+                        <div class="icon-group">
+                            <span>⚙️</span>
+                            <span>💬</span>
+                            <span>🗳️</span>
+                        </div>
+                    </div>
+                `;
+                questionCard.querySelector('a').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    renderQuestionDetail(q.id);
+                });
+                questionListDiv.appendChild(questionCard);
+            });
+        }
+
+        // --- Ask Question Modal ---
+        function openAskQuestionModal() {
+            if (!currentUser) {
+                showMessage('Please log in to ask a question.', 'error');
+                showPage('login-page');
+                return;
+            }
+            askQuestionModal.classList.add('active');
+        }
+
+        function closeAskQuestionModal() {
+            askQuestionModal.classList.remove('active');
+            askQuestionForm.reset(); // Clear form on close
+            showMessage('Question submission cancelled.', 'info');
+        }
+
+        function handleAskQuestion(event) {
+            event.preventDefault();
+            const title = document.getElementById('question-title').value;
+            const description = document.getElementById('question-description').value;
+            const tags = document.getElementById('question-tags').value;
+
+            if (!title.trim() || !description.trim()) {
+                showMessage('Title and Description are required.', 'error');
+                return;
+            }
+
+            const newQuestionId = questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
+            const newQuestion = {
+                id: newQuestionId,
+                userId: currentUser.id,
+                title: title,
+                description: description,
+                tags: tags,
+                timestamp: new Date().toISOString()
+            };
+
+            questions.push(newQuestion);
+            localStorage.setItem(LOCAL_STORAGE_QUESTIONS_KEY, JSON.stringify(questions));
+            showMessage('Question posted successfully!', 'success');
+            closeAskQuestionModal();
+            showPage('dashboard-page'); // Re-render dashboard to show new question
+        }
+
+        // --- Question Detail Page ---
+        function renderQuestionDetail(questionId) {
+            currentQuestionId = questionId; // Store current question ID
+            const question = questions.find(q => q.id === questionId);
+
+            if (!question) {
+                showMessage('Question not found.', 'error');
+                showPage('dashboard-page');
+                return;
+            }
+
+            const poster = users.find(u => u.id === question.userId);
+            const username = poster ? poster.username : 'Unknown';
+            const date = new Date(question.timestamp).toLocaleDateString();
+            const time = new Date(question.timestamp).toLocaleTimeString();
+
+            document.getElementById('detail-question-title').textContent = question.title;
+            document.getElementById('detail-question-username').textContent = username;
+            document.getElementById('detail-question-timestamp').textContent = `${date} at ${time}`;
+            document.getElementById('detail-question-description').innerHTML = question.description; // Using innerHTML for RTE content
+
+            const tagsDiv = document.getElementById('detail-question-tags');
+            tagsDiv.innerHTML = '';
+            if (question.tags) {
+                question.tags.split(',').forEach(tag => {
+                    const span = document.createElement('span');
+                    span.textContent = tag.trim();
+                    tagsDiv.appendChild(span);
+                });
+            }
+
+            // AI Bot Simulation
+            const aiBotResponseDiv = document.getElementById('ai-bot-response');
+            const aiBotText = document.getElementById('ai-bot-text');
+            let aiResponse = null;
+            const lowerTitle = question.title.toLowerCase();
+            if (lowerTitle.includes("html") && lowerTitle.includes("what")) {
+                aiResponse = "HTML stands for HyperText Markup Language, which is the standard markup language for documents designed to be displayed in a web browser. It describes the structure of a web page semantically and originally included cues for the appearance of the document.";
+            } else if (lowerTitle.includes("html") && lowerTitle.includes("full-form")) {
+                aiResponse = "The full form of HTML is Hypertext Markup Language.";
+            } else if (lowerTitle.includes("web-page") && lowerTitle.includes("what")) {
+                aiResponse = "A webpage is a document, commonly written in HTML, that is accessible via the Internet or other computer networks and viewable using a web browser. A web page may contain text, graphics, and hyperlinks to other web pages and files.";
+            }
+
+            if (aiResponse) {
+                aiBotText.textContent = aiResponse;
+                aiBotResponseDiv.style.display = 'block';
+            } else {
+                aiBotResponseDiv.style.display = 'none';
+            }
+
+            renderAnswers(questionId);
+            showPage('question-detail-page');
+
+            // Show/hide answer form based on login status
+            if (currentUser) {
+                postAnswerForm.style.display = 'block';
+                answerLoginPrompt.style.display = 'none';
+            } else {
+                postAnswerForm.style.display = 'none';
+                answerLoginPrompt.style.display = 'block';
+            }
+        }
+
+        function renderAnswers(questionId) {
+            const answerListDiv = document.getElementById('answer-list');
+            answerListDiv.innerHTML = ''; // Clear existing answers
+            const filteredAnswers = answers.filter(a => a.questionId === questionId);
+
+            document.getElementById('answers-count').textContent = filteredAnswers.length;
+
+            if (filteredAnswers.length === 0) {
+                answerListDiv.innerHTML = '<p>No answers yet. Be the first to answer!</p>';
+                return;
+            }
+
+            filteredAnswers.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort by oldest first
+
+            filteredAnswers.forEach(a => {
+                const answerer = users.find(u => u.id === a.userId);
+                const username = answerer ? answerer.username : 'Unknown';
+                const date = new Date(a.timestamp).toLocaleDateString();
+                const time = new Date(a.timestamp).toLocaleTimeString();
+
+                const answerCard = document.createElement('div');
+                answerCard.classList.add('answer-card');
+                answerCard.innerHTML = `
+                    <p>${a.content}</p>
+                    <p class="answer-meta">Answered by ${username} on ${date} at ${time}</p>
+                `;
+                answerListDiv.appendChild(answerCard);
+            });
+        }
+
+        function handlePostAnswer(event) {
+            event.preventDefault();
+            const answerContent = document.getElementById('answer-content').value;
+
+            if (!answerContent.trim()) {
+                showMessage('Answer content cannot be empty.', 'error');
+                return;
+            }
+
+            if (!currentUser) {
+                showMessage('You must be logged in to post an answer.', 'error');
+                showPage('login-page');
+                return;
+            }
+
+            const newAnswerId = answers.length > 0 ? Math.max(...answers.map(a => a.id)) + 1 : 1;
+            const newAnswer = {
+                id: newAnswerId,
+                questionId: currentQuestionId,
+                userId: currentUser.id,
+                content: answerContent,
+                timestamp: new Date().toISOString()
+            };
+
+            answers.push(newAnswer);
+            localStorage.setItem(LOCAL_STORAGE_ANSWERS_KEY, JSON.stringify(answers));
+            showMessage('Answer posted successfully!', 'success');
+            document.getElementById('answer-content').value = ''; // Clear textarea
+            renderAnswers(currentQuestionId); // Re-render answers for current question
+        }
+
+
+        // --- Event Listeners and Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            seedInitialData();
+            applyTheme(); // Apply saved theme on load
+            updateNavbar(); // Set initial navbar state
+            if (currentUser) {
+                showPage('dashboard-page');
+            } else {
+                showPage('home-page');
+            }
+
+            // Attach form submission handlers
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            askQuestionForm.addEventListener('submit', handleAskQuestion);
+            postAnswerForm.addEventListener('submit', handlePostAnswer);
+        });
+    </script>
+</body>
+</html>
