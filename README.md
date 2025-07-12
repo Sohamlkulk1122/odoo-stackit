@@ -37,7 +37,7 @@ StackIt is a **lightweight, Brainly-inspired Q&A platform** built with React, de
 
 ## 🖼️ App Preview
 
-![StackIt UI](https://your-screenshot-or-mockup-link.com) <!-- Optional image link -->
+![StackIt UI]
 
 ---
 
@@ -120,5 +120,8 @@ Admin dashboard UI
 PWA offline support
 
 GitHub Pages deployment
+
+If the app is not working you can test it out the demo-version of Stalk-it using Stalk-it.html
+
 
 
