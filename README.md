@@ -1,5 +1,6 @@
 # StackIt – Minimal Q&A Platform
 Walkthrough : https://drive.google.com/file/d/1LaiUyEkytYGw0_fBK1YzJsofXU_jumKD/view?usp=sharing
+
 **StackIt** is a local-first React Q&A app inspired by Brainly. It features:
 
 - 🔐 Login/Register with localStorage auth
